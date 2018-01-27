@@ -33,4 +33,4 @@ $(VALGRIND_SRC): $(VALGRIND_TARBALL)
 	cd $(VALGRIND_SRC); ./autogen.sh; ./configure CC=clang
 
 clean:
-	rm -rf $(VALGRIND_SRC) $(VALGRIND_TARBALL)
+	rm -rf $(VALGRIND_SRC) #$(VALGRIND_TARBALL)
