@@ -30,7 +30,7 @@ $(VALGRIND_SRC): $(VALGRIND_TARBALL)
 	cd $(VALGRIND_SRC)/memview; \
 	    ln -s ../../../mv_ipc.h mv_ipc.h; \
 	    ln -s ../../memview/mv_main.c mv_main.c
-	cd $(VALGRIND_SRC); ./autogen.sh; ./configure
+	cd $(VALGRIND_SRC); ./autogen.sh; ./configure CC=clang
 
 clean:
 	rm -rf $(VALGRIND_SRC) $(VALGRIND_TARBALL)
