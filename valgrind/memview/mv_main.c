@@ -636,6 +636,24 @@ static void addEvent_Ir ( IRSB* sb, IRAtom* iaddr, UInt isize )
     events_used++;
 }
 
+/* Add a guarded read event. */
+static
+void addEvent_Dr_guarded ( IRSB* sb, IRAtom* daddr, Int dsize, IRAtom* guard )
+{
+   Event* evt;
+   tl_assert(isIRAtom(daddr));
+   tl_assert(dsize >= 1 && dsize <= MAX_DSIZE);
+   if (events_used == N_EVENTS)
+      flushEvents(sb);
+   tl_assert(events_used >= 0 && events_used < N_EVENTS);
+   evt = &events[events_used];
+   evt->ekind = Event_Dr;
+   evt->addr  = daddr;
+   evt->size  = dsize;
+   //evt->guard = guard;
+   events_used++;
+}
+
 static
 void addEvent_Dr ( IRSB* sb, IRAtom* daddr, Int dsize, Int type )
 {
@@ -652,6 +670,24 @@ void addEvent_Dr ( IRSB* sb, IRAtom* daddr, Int dsize, Int type )
     evt->type  = type;
     events_used++;
     canCreateModify = True;
+}
+
+/* Add a guarded write event. */
+static
+void addEvent_Dw_guarded ( IRSB* sb, IRAtom* daddr, Int dsize, IRAtom* guard )
+{
+   Event* evt;
+   tl_assert(isIRAtom(daddr));
+   tl_assert(dsize >= 1 && dsize <= MAX_DSIZE);
+   if (events_used == N_EVENTS)
+      flushEvents(sb);
+   tl_assert(events_used >= 0 && events_used < N_EVENTS);
+   evt = &events[events_used];
+   evt->ekind = Event_Dw;
+   evt->addr  = daddr;
+   evt->size  = dsize;
+   //evt->guard = guard;
+   events_used++;
 }
 
 static
@@ -900,6 +936,30 @@ mv_instrument ( VgCallbackClosure* closure,
                 addStmtToIRSB( sbOut, st );
                 break;
 
+            case Ist_StoreG: {
+               {
+                  IRStoreG* sg   = st->Ist.StoreG.details;
+                  IRExpr*   data = sg->data;
+                  IRType    type = typeOfIRExpr(tyenv, data);
+                  addEvent_Dw_guarded(sbOut, sg->addr,
+                                      sizeofIRType(type), sg->guard );
+               }
+               addStmtToIRSB( sbOut, st );
+               break;
+            }
+            case Ist_LoadG: {
+               {
+                  IRLoadG* lg       = st->Ist.LoadG.details;
+                  IRType   type     = Ity_INVALID; /* loaded type */
+                  IRType   typeWide = Ity_INVALID; /* after implicit widening */
+                  typeOfIRLoadGOp(lg->cvt, &typeWide, &type);
+                  addEvent_Dr_guarded(sbOut, lg->addr,
+                                      sizeofIRType(type), lg->guard );
+               }
+               addStmtToIRSB( sbOut, st );
+               break;
+            }
+
             case Ist_Dirty:
                 {
                     Int      dsize;
@@ -972,6 +1032,7 @@ mv_instrument ( VgCallbackClosure* closure,
                 break;
 
             default:
+                tl_assert2(0, "GOT TAG 0x%04x\n", st->tag);
                 tl_assert(0);
         }
     }
