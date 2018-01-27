@@ -1,0 +1,12 @@
+--- valgrind_src/coregrind/m_syswrap/syswrap-generic.c	2015-09-08 16:23:26.000000000 +0300
++++ valgrind_src/coregrind/m_syswrap/syswrap-generic.c	2018-01-27 14:14:53.973378003 +0200
+@@ -1319,8 +1319,7 @@
+    if (! VG_(am_extend_into_adjacent_reservation_client)( aseg->start, delta,
+                                                           &overflow)) {
+       if (overflow)
+-         VG_(umsg)("brk segment overflow in thread #%u: can't grow to %#lx\n",
+-                   tid, newbrkP);
++         ;
+       else
+          VG_(umsg)("Cannot map memory to grow brk segment in thread #%u "
+                    "to %#lx\n", tid, newbrkP);

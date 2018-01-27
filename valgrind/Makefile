@@ -13,12 +13,14 @@ $(VALGRIND_SRC): $(VALGRIND_TARBALL)
 	#svn co svn://svn.valgrind.org/valgrind/trunk $(VALGRIND_SRC)
 	tar xjf $(VALGRIND_TARBALL)
 	mv $(VALGRIND_VERSION) $(VALGRIND_SRC)
+	cp -rf patch_rm_brk_msg.diff $(VALGRIND_SRC)
 	cp -rf patch_memview.diff $(VALGRIND_SRC)
 	cp -rf patch_wrapmalloc.diff $(VALGRIND_SRC)
 	cp -rf patch_vex_floattypes.diff $(VALGRIND_SRC)/VEX
 	cd $(VALGRIND_SRC); \
 	    patch -p0 < patch_memview.diff; \
 	    patch -p0 < patch_wrapmalloc.diff
+	    patch -p0 < patch_rm_brk_msg.diff
 	cd $(VALGRIND_SRC)/VEX; \
 	    patch -p0 < patch_vex_floattypes.diff
 	cp -rf memview $(VALGRIND_SRC)
